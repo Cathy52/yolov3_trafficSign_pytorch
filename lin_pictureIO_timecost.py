@@ -98,7 +98,8 @@ if __name__ == "__main__":
         nums = 0
         for name in tqdm(names[:]):
             # 3.处理图片
-            print("------3.简单处理图片：读取转换为tensor-0.4，resize-0，")
+            print("------------------------------------------------对每一张图片------------------------------------")
+            print("------3.检测前简单处理图片：读取转换为tensor-0.4，resize-0，")
             t3 = time.time()
 
             img_id = name.split(".")[0]
@@ -136,7 +137,7 @@ if __name__ == "__main__":
 
             if  detections is not None:  #  one image
                 # 5.识别
-                print("------5.识别图片：前提为检测结果不为空")
+                print("------5.识别图片")
                 t5 = time.time()
 
                 objects = []  #  save the results of a image detection
@@ -146,10 +147,11 @@ if __name__ == "__main__":
                 img_copy =Image.open(img_path) 
                 j = 0
                 
-                print("简单处理，提取该图片每一个检测框内的内容")
+                print("识别前简单处理，提取图片所有的检测框内")
                 print(time.time()-t5)
 
-                for i, (x1, y1, x2, y2, conf, cls_conf, cls_pred) in enumerate(detections): #  one object in a image                
+                for i, (x1, y1, x2, y2, conf, cls_conf, cls_pred) in enumerate(detections): #  one object in a image
+                    t51 = time.time()
                     x1 = int(x1)
                     y1 = int(y1)
                     x2 = int(x2)
@@ -159,10 +161,7 @@ if __name__ == "__main__":
                     
                     min_sign_size = 10
 
-                    # 不处理太小的检测框
                     if box_w >= min_sign_size and box_h >= min_sign_size:                        
-                        print("依次分析每一个检测框")
-                        t51 = time.time()
                         crop_sign_org = img_copy.crop((x1, y1, x2, y2)).convert(mode="RGB")
 
                         # #### to class  ###############
@@ -174,7 +173,7 @@ if __name__ == "__main__":
 
                         crop_sign_input = test_transform(crop_sign_org).unsqueeze(0)
 
-                        print("简单处理处理")
+                        print("识别前对每一个检测框简单处理")
                         print(time.time()-t51)
 
                         with torch.no_grad():
@@ -184,28 +183,11 @@ if __name__ == "__main__":
                             print("识别结束")
                             print(time.time()-t51)
                         sign_type  = torch.max(pred_class, 1)[1].to("cpu").numpy()[0]
-                        # #### to class  ###############
                         cls_pred = sign_type
-
-                        # print("---以下：开始保存切割后的图片---")
-                        # print(time.time())
-                        # # #############
-                        # # save crop image
-                        # # #############                        
-                        # if classes[int(cls_pred)] != "zo":
-                        #     # save  crop image #############
-                        #     save_dir = "img_crop_2_classification_Tinghua_weights_11/" + classes[int(cls_pred)]
-                        #     if not os.path.exists(save_dir):
-                        #         os.makedirs(save_dir)
-                        #     name = dir_.split("/")[-2] + "_" + dir_.split("/")[-1] + str(int(random.random() * 100000000))
-                        #     print("save path:", save_dir, str(name) + ".jpg")
-                        #     #  save crop sign
-                        #     crop_sign_org.save(os.path.join(save_dir, str(name) + ".jpg"))
-                        
-                        print("开始标记图片")
-                        print(time.time()-t51)
                        
                         if True and classes[int(cls_pred)] != "zo":     
+                            print("识别后对每一个检测框进行标记")
+                            print(time.time()-t51)                            
                             color = "r"
                             bbox = patches.Rectangle((x1, y1), box_w, box_h, linewidth=1, edgecolor=color, facecolor="none")
                             ax.add_patch(bbox)
@@ -219,7 +201,6 @@ if __name__ == "__main__":
                                 bbox={"color": color, "pad": 0},
                             )
                             
-
                             pad_sign_path_png = "ALL_sign_data/pad-all/" + classes[int(cls_pred)] + ".png"
                             pad_sign_path_jpg = "ALL_sign_data/pad-all/" + classes[int(cls_pred)] + ".jpg"
                             if  os.path.isfile(pad_sign_path_png):
@@ -235,8 +216,11 @@ if __name__ == "__main__":
                             
                             #  save predict results to a json file: my_train_results.json
                             objects.append({'category': classes[int(cls_pred)], 'score': 848.0, 'bbox': {'xmin': x1, 'ymin': y1, 'ymax': y2, 'xmax': x2}})
-                        print("该检测框标记结束")
-                        print(time.time()-t5)
+                # 对每一个检测框进行操作                
+                    # 不处理太小的检测框
+                        # 不标记某些检测框
+                            print("该检测框标记结束")
+                            print(time.time()-t51)
 
                 # Save generated image with detections
                 nums += 1
@@ -249,11 +233,11 @@ if __name__ == "__main__":
                     plt.savefig(f"output/{dir__ + str(nums).zfill(5)}.png", bbox_inches="tight", pad_inches=0.0,)
                 except:
                     continue
-                print("该图片识别，标记结束")
-                print(time.time()-t5)
+            print("该图片识别，标记结束")
+            print(time.time()-t5)
             train_results["imgs"][img_id] = {"objects": objects}
             print("保存此图片的结果")
-            print(time.time()-t5)
+            print(time.time()-t3)
         print("------6.所有识别和检测结束，开始写输出文件")
         t6 = time.time()
     # 将结果写到json文件中
