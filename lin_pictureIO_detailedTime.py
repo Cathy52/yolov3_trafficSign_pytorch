@@ -63,7 +63,7 @@ if __name__ == "__main__":
         Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
     
     # 1.检测模型构建
-    print("------检测：使用Draknet构建检测模型+加载权重文件")
+    print("------1.检测模型：使用Draknet构建检测模型+加载权重文件")
     print(time.time())
     # 定义检测用的模型
     if(True):
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     print(time.time())
 
     # 1.识别模型构建
-    print("------识别：ResNet18初始化+load_state_dict+to(gpu)+eval")
+    print("------2.识别模型：ResNet18初始化+load_state_dict+to(gpu)+eval")
     print(time.time())
     # 定义分类用的模型
     if(True):
@@ -100,7 +100,7 @@ if __name__ == "__main__":
         nums = 0
         for name in tqdm(names[:]):
             # 3.处理图片
-            print("------处理图片：读取转换为tensor-0.4，resize-0，")
+            print("------3.简单处理图片：读取转换为tensor-0.4，resize-0，")
             print(time.time())
 
             img_id = name.split(".")[0]
@@ -126,7 +126,7 @@ if __name__ == "__main__":
             print(time.time())
 
             # 4.检测图片
-            print("------检测图片")
+            print("------4.检测图片")
             print(time.time())
             # Get detections
             with torch.no_grad():
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
             if  detections is not None:  #  one image
                 # 5.识别
-                print("------识别图片：前提为检测结果不为空")
+                print("------5.识别图片：前提为检测结果不为空")
                 print(time.time())
 
                 objects = []  #  save the results of a image detection
@@ -256,7 +256,7 @@ if __name__ == "__main__":
             train_results["imgs"][img_id] = {"objects": objects}
             print("保存此图片的结果")
             print(time.time())
-        print("------所有识别和检测结束，开始写输出文件")
+        print("------6.所有识别和检测结束，开始写输出文件")
         print(time.time())
     # 将结果写到json文件中
     if(True):
